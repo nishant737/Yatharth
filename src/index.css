@@ -1,0 +1,44 @@
+/* ── Brand tokens ───────────────────────────────────────────────────────────── */
+:root {
+  --accent:          #DB6436;
+  --accent-dim:      rgba(219, 100, 54, 0.18);
+  --accent-glow:     rgba(219, 100, 54, 0.35);
+  --neutral:         #A1958C;
+  --neutral-dim:     rgba(161, 149, 140, 0.15);
+  --bg:              #0e0b09;
+  --text:            #f5f0eb;
+  --text-muted:      rgba(245, 240, 235, 0.45);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 2px;
+  opacity: 0.6;
+}
