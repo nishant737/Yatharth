@@ -103,7 +103,7 @@ function MenuDrawer({ open, onClose }) {
             }}
           />
 
-          {/* Drawer panel */}
+          {/* Drawer panel with animated background */}
           <motion.div
             key="drawer"
             initial={{ x: '100%' }}
@@ -115,11 +115,36 @@ function MenuDrawer({ open, onClose }) {
               top: 0, right: 0, bottom: 0,
               zIndex: 999,
               width: 'clamp(300px, 50vw, 520px)',
-              background: '#0d0a07',
+              background: 'none',
               display: 'flex',
               overflow: 'hidden',
             }}
           >
+            {/* Animated gradient background */}
+            <motion.div
+              aria-hidden
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 0,
+                pointerEvents: 'none',
+                background: 'linear-gradient(135deg, #1a120d 0%, #DB6436 120%)',
+                opacity: 0.92,
+                filter: 'blur(0.5px)',
+                animation: 'drawerBgAnim 8s linear infinite alternate',
+              }}
+            />
+            {/* Keyframes for animated gradient */}
+            <style>{`
+              @keyframes drawerBgAnim {
+                0% { background-position: 0% 50%; }
+                100% { background-position: 100% 50%; }
+              }
+            `}</style>
             {/* ── Left: dot grid column ── */}
             <div style={{
               width: 'clamp(60px, 10vw, 90px)',
@@ -237,17 +262,6 @@ function MenuDrawer({ open, onClose }) {
                       e.currentTarget.style.paddingLeft = '0px'
                     }}
                   >
-                    <span style={{
-                      fontFamily: "'Inter', system-ui, sans-serif",
-                      fontWeight: 400,
-                      fontSize: '0.55em',
-                      color: 'rgba(219,100,54,0.5)',
-                      letterSpacing: '0.14em',
-                      flexShrink: 0,
-                      marginTop: '0.15em',
-                    }}>
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
                     {link.label}
                   </motion.a>
                 ))}
@@ -332,19 +346,21 @@ export default function Navbar() {
           />
         </a>
 
-        {/* Hamburger button */}
-        <button
-          onClick={() => setOpen(v => !v)}
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            padding: '10px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 1001,
-          }}
-        >
-          <HamburgerIcon open={open} />
-        </button>
+        {/* Hamburger button - hide when menu is open */}
+        {!open && (
+          <button
+            onClick={() => setOpen(v => !v)}
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: '10px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 1001,
+            }}
+          >
+            <HamburgerIcon open={open} />
+          </button>
+        )}
       </motion.nav>
 
       <MenuDrawer open={open} onClose={() => setOpen(false)} />

@@ -3,6 +3,29 @@ import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from
 import craftBg from '../asset/craft.jpeg'
 import storyVideo from '../asset/story.mp4'
 
+function useVisibleCount() {
+  const [count, setCount] = useState(() => {
+    if (typeof window === 'undefined') return 3
+    return window.innerWidth < 600 ? 1 : window.innerWidth < 1024 ? 2 : 3
+  })
+  useEffect(() => {
+    const update = () => setCount(window.innerWidth < 600 ? 1 : window.innerWidth < 1024 ? 2 : 3)
+    window.addEventListener('resize', update, { passive: true })
+    return () => window.removeEventListener('resize', update)
+  }, [])
+  return count
+}
+
+function useIsMobile() {
+  const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768)
+  useEffect(() => {
+    const update = () => setMobile(window.innerWidth < 768)
+    window.addEventListener('resize', update, { passive: true })
+    return () => window.removeEventListener('resize', update)
+  }, [])
+  return mobile
+}
+
 // ─── Responsive grid CSS ──────────────────────────────────────────────────────
 
 // ─── Parallax 3D background ──────────────────────────────────────────────────
@@ -402,9 +425,6 @@ function ServiceCard({ service, index }) {
 }
 
 // ─── Main section ─────────────────────────────────────────────────────────────
-const VISIBLE = 3                                        // cards visible at once
-const PAGES   = Math.ceil(SERVICES.length / VISIBLE)     // 2 pages: [0,1,2] + [3,4]
-
 function ArrowBtn({ dir, onClick, disabled }) {
   const [hov, setHov] = useState(false)
   return (
@@ -439,13 +459,16 @@ function ArrowBtn({ dir, onClick, disabled }) {
 export default function CraftSection({ onCenterCardChange }) {
   const [active, setActive] = useState(0)
   const dir = useRef(1)
+  const VISIBLE = useVisibleCount()
+  const isMobile = useIsMobile()
+  const PAGES = Math.ceil(SERVICES.length / VISIBLE)
 
   const go = (next) => {
     dir.current = next > active ? 1 : -1
-    setActive(next)
+    setActive(Math.max(0, Math.min(next, SERVICES.length - VISIBLE)))
   }
 
-  const page    = Math.round(active / VISIBLE)           // 0 or 1
+  const page    = Math.floor(active / VISIBLE)
   const visible = SERVICES.slice(active, active + VISIBLE)
 
   // Center card = index 1 when 3 cards visible, index 0 when ≤ 2 cards visible
@@ -457,16 +480,17 @@ export default function CraftSection({ onCenterCardChange }) {
   return (
     <section
       style={{
-
         position: 'relative',
         zIndex: 10,
         background: '#0a0806',
-        height: '100vh',
+        minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 'clamp(60px, 10vw, 120px) clamp(20px, 5vw, 60px)',
+        padding: isMobile
+          ? '12px 4px 16px'
+          : 'clamp(28px, 5vw, 60px) clamp(8px, 3vw, 28px)',
         overflow: 'hidden',
       }}
     >
@@ -486,8 +510,8 @@ export default function CraftSection({ onCenterCardChange }) {
         }
       `}</style>
 
-      {/* ── Parallax 3D background ── */}
-      <ParallaxBackground />
+      {/* ── Parallax 3D background — desktop only to prevent mobile jank ── */}
+      {!isMobile && <ParallaxBackground />}
 
       {/* ── Craft image background (low opacity) ── */}
       <div
@@ -506,16 +530,17 @@ export default function CraftSection({ onCenterCardChange }) {
       <motion.h2
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
+        viewport={{ once: true, amount: 0.1 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         style={{
           position: 'relative', zIndex: 1,
           fontFamily: "'Inter', system-ui, sans-serif",
           fontWeight: 300,
-          fontSize: 'clamp(1.8rem, 4vw, 3rem)',
+          fontSize: 'clamp(1.3rem, 4vw, 2.1rem)',
           letterSpacing: '-0.03em',
           color: '#f5f0eb',
-          margin: '0 0 48px',
+          margin: isMobile ? '0 0 4px' : '0 0 clamp(12px, 2vw, 28px)',
+          textAlign: 'center',
         }}
       >
         Our Services
@@ -531,15 +556,14 @@ export default function CraftSection({ onCenterCardChange }) {
           padding: '16px 4px 4px',
         }}
       >
-        <AnimatePresence mode="popLayout" initial={false}>
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={active}
-            initial={{ x: dir.current * 80, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: dir.current * -80, opacity: 0 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
             className="craft-grid"
-            style={{}}
           >
             {visible.map((service) => (
               <ServiceCard key={service.title} service={service} index={0} />
@@ -555,7 +579,8 @@ export default function CraftSection({ onCenterCardChange }) {
           display: 'flex',
           alignItems: 'center',
           gap: '20px',
-          marginTop: 'clamp(28px, 4vw, 44px)',
+          marginTop: 'clamp(20px, 3vw, 44px)',
+          flexShrink: 0,
         }}
       >
         <ArrowBtn dir="prev" onClick={() => go(active - VISIBLE)} disabled={active === 0} />
@@ -591,7 +616,7 @@ export default function CraftSection({ onCenterCardChange }) {
           width: 'clamp(40px, 8vw, 80px)',
           height: '1px',
           background: 'rgba(219,100,54,0.25)',
-          marginTop: 'clamp(40px, 6vw, 72px)',
+          marginTop: 'clamp(28px, 4vw, 56px)',
         }}
       />
     </section>

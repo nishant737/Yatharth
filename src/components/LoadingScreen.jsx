@@ -31,11 +31,12 @@ export default function LoadingScreen({ onComplete }) {
 
   if (phase === 'done') return null
 
+  // Fade out vanish: opacity only
   return (
     <motion.div
-      animate={phase === 'exit' ? { y: '-100%' } : { y: 0 }}
+      animate={phase === 'exit' ? { opacity: 0 } : { opacity: 1 }}
       transition={phase === 'exit'
-        ? { duration: 0.9, ease: [0.76, 0, 0.24, 1] }
+        ? { duration: 1.7, ease: [0.4, 0, 0.2, 1] }
         : { duration: 0 }
       }
       style={{
@@ -44,6 +45,7 @@ export default function LoadingScreen({ onComplete }) {
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden',
+        touchAction: 'none',
       }}
     >
       {/* Noise */}
@@ -178,19 +180,7 @@ export default function LoadingScreen({ onComplete }) {
         Mangaluru &nbsp;·&nbsp; Est. 2020
       </motion.p>
 
-      {/* Exit curtain — slides up from bottom to cover before parent exits */}
-      {phase === 'exit' && (
-        <motion.div
-          initial={{ y:'100%' }}
-          animate={{ y:0 }}
-          transition={{ duration:0.5, ease:[0.76,0,0.24,1] }}
-          style={{
-            position:'absolute', inset:0,
-            background:'#0a0806',
-            zIndex:10,
-          }}
-        />
-      )}
+      {/* Exit curtain removed for fade out effect */}
     </motion.div>
   )
 }
